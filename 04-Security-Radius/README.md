@@ -55,30 +55,3 @@ The security architecture follows the \*\*AAA (Authentication, Authorization, an
 \* \*\*Port:\*\* UDP 1812 (Authentication).
 
 
-
----
-
-
-
-\## 🔄 Authentication Workflow (Logic Flow)
-
-
-
-Below is the logical sequence of an authentication request:
-
-
-
-```mermaid
-sequenceDiagram
-    participant U as User (CORP\oswa)
-    participant P as pfSense (NAS)
-    participant N as Windows NPS (RADIUS)
-    participant AD as Active Directory (DC)
-
-    U->>P: Login Request
-    P->>N: Access-Request (UDP 1812)
-    N->>AD: Query Identity & Groups
-    AD-->>N: Success (Member of VPN_Users)
-    N->>N: Evaluate Policy (Protocol/IP)
-    N-->>P: Access-Accept
-    P->>U: Access Granted
