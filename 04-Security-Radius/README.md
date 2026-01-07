@@ -69,30 +69,16 @@ Below is the logical sequence of an authentication request:
 
 
 ```mermaid
-
 sequenceDiagram
+    participant U as User (CORP\oswa)
+    participant P as pfSense (NAS)
+    participant N as Windows NPS (RADIUS)
+    participant AD as Active Directory (DC)
 
-&nbsp;   participant U as User (CORP\\oswa)
-
-&nbsp;   participant P as pfSense (NAS)
-
-&nbsp;   participant N as Windows NPS (RADIUS)
-
-&nbsp;   participant AD as Active Directory (DC)
-
-
-
-&nbsp;   U->>P: Login Request
-
-&nbsp;   P->>N: Access-Request (UDP 1812 + Shared Secret)
-
-&nbsp;   N->>AD: Query Identity \& Group Membership
-
-&nbsp;   AD-->>N: Success (Member of VPN\_Users)
-
-&nbsp;   N->>N: Evaluate Policy (Protocol \& IP Check)
-
-&nbsp;   N-->>P: Access-Accept
-
-&nbsp;   P->>U: Access Granted
-
+    U->>P: Login Request
+    P->>N: Access-Request (UDP 1812)
+    N->>AD: Query Identity & Groups
+    AD-->>N: Success (Member of VPN_Users)
+    N->>N: Evaluate Policy (Protocol/IP)
+    N-->>P: Access-Accept
+    P->>U: Access Granted
