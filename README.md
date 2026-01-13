@@ -30,6 +30,18 @@ The environment is hosted on a high-performance **HP Z800 Workstation** running 
 | **AAA Security** | Windows Network Policy Server (NPS), RADIUS Protocol |
 | **Endpoints** | Windows 10 Pro (Domain-Joined), Debian Linux |
 
+
+---
+
+
+## 🗺️ System Architecture & Visual Topology
+
+> **High-level representation of the hybrid environment, illustrating the Zero-Trust segmentation between the Management LAN, the isolated Workstation segment (OPT1), and the secure Remote Access VPN tunnel.**
+
+![Network Topology](./Diagrams/topology.png)
+![Visual Outline](./Diagrams/visual-outline.jpg)
+
+
 ---
 
 ## 🚀 Key Implementation Highlights
@@ -42,12 +54,6 @@ Implemented granular firewall rules using **pfSense Aliases**. Workstations in t
 
 ### 3. Active Directory Optimization
 Resolved complex DNS resolution issues by configuring **Reverse Lookup Zones** and forwarders, ensuring seamless service discovery across the forest. Enforced security baselines via GPOs (RDP Access Control, Password Complexity).
-
----
-
-![Network Topology](./Diagrams/topologia.png)
-![Network Topology](./Diagrams/visual outline of the project.jpg)
-
 
 ---
 
