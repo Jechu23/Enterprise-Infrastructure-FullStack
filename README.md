@@ -33,14 +33,13 @@ The environment is hosted on a high-performance **HP Z800 Workstation** running 
 
 ---
 
-
 ## 🗺️ System Architecture & Visual Topology
 
-> **High-level representation of the hybrid environment, illustrating the Zero-Trust segmentation between the Management LAN, the isolated Workstation segment (OPT1), and the secure Remote Access VPN tunnel.**
+> **Technical blueprint of the hybrid infrastructure. This diagram illustrates the pfSense core routing, VLAN segmentation (Management vs. OPT1), and the RADIUS-backed VPN authentication flow.**
 
-![Network Topology](./Diagrams/topology.png)
-![Visual Outline](./Diagrams/visual-outline.jpg)
-
+<p align="center">
+  <img src="./Diagrams/topologia.png" width="90%" alt="Network Topology">
+</p>
 
 ---
 
