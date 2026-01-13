@@ -1,32 +1,25 @@
-\# 🛠️ Troubleshooting \& Issue Resolution Log
+# 🛠️ Troubleshooting & Issue Resolution Log (Post-Mortem)
 
+This log documents the critical challenges encountered during the **pfSense-to-NPS** integration and the systematic approach used to resolve them. documenting these "lessons learned" ensures infrastructure reliability and knowledge retention.
 
+## 📋 Systematic Issue Tracking
 
-During the integration of pfSense and Windows NPS, several challenges were identified and resolved.
-
-
-
-| Issue | Root Cause | Resolution |
-
+| Issue | Root Cause Analysis | Resolution |
 | :--- | :--- | :--- |
+| **Silent Failures (No Logs)** | **IP Mismatch:** pfSense was targeting an incorrect host IP for the RADIUS server. | Verified IP using `ipconfig` on the DC and updated pfSense Authentication settings to `172.16.10.11`. |
+| **NPS Reason Code 66** | **Protocol Mismatch:** pfSense was sending credentials via PAP while NPS strictly required MS-CHAPv2. | Temporarily enabled **PAP** in NPS Constraints for diagnostic testing, then aligned both to **MS-CHAPv2** for production. |
+| **Shared Secret Mismatch** | **Service Cache:** Even after updating the secret, NPS retained the old hash in memory. | Executed `Restart-Service Ias` in PowerShell to force-reload the policy engine and clear the cache. |
+| **NAS Identifier Rejection** | **Identity Mismatch:** pfSense used the WAN IP (`192.168.4.x`) as source, but NPS expected the LAN IP. | Configured **NAS IP Address** binding in pfSense to explicitly use `172.16.10.1`. |
+| **UDP Timeout** | **Host Firewall:** The Windows Advanced Firewall was dropping unsolicited UDP 1812/1813 traffic. | Provisioned a scoped inbound rule via PowerShell to allow RADIUS traffic from the pfSense Gateway. |
 
-| \*\*No Logs in Event Viewer\*\* | IP Mismatch (pfSense pointing to `.11` instead of `.20`) | Corrected Host IP in pfSense Authentication Server settings. |
+---
 
-| \*\*Reason Code 66\*\* | Protocol Mismatch (pfSense sent PAP, NPS only allowed MS-CHAPv2) | Enabled \*\*PAP\*\* in the NPS Network Policy Constraints. |
+## 💡 Essential Diagnostic Toolkit
 
-| \*\*Authentication Failed (New Pass)\*\* | Service Cache (NPS kept the old secret in memory) | Executed `Restart-Service Ias` in PowerShell to force-reload the configuration. |
+To maintain the AAA environment, the following commands are utilized for real-time monitoring and verification:
 
-| \*\*NAS Identity Error\*\* | Source IP Mismatch (pfSense used WAN IP `192.168.4.41`) | Bound pfSense RADIUS traffic to the \*\*LAN interface\*\* (10.10.10.1). |
-
-| \*\*Port Blockage\*\* | Host Firewall | Applied PowerShell rule: `New-NetFirewallRule -DisplayName "RADIUS" -Protocol UDP -LocalPort 1812`. |
-
-
-
-\## 💡 Key Commands Used
-
-\- `gpupdate /force`: To refresh Group Policy objects.
-
-\- `Restart-Service Ias`: To restart the RADIUS engine without a reboot.
-
-\- `nc -u -z -v 10.10.10.20 1812`: To verify UDP port reachability from pfSense.
-
+### 1. Network Reachability (pfSense Shell)
+Before testing authentication, we verify that the UDP port is open and reachable through the virtual switches:
+```bash
+# Verify UDP 1812 reachability to the NPS Server
+nc -u -z -v 172.16.10.11 1812

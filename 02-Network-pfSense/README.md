@@ -1,58 +1,59 @@
 # 🛡️ Module 02: Network Security & Perimeter Firewall (pfSense)
 
-This module documents the configuration of the **pfSense 2.x** appliance, acting as the primary Firewall, Router, and Gateway for the entire enterprise lab.
+This module documents the deployment and hardening of the **pfSense 2.7.x** virtual appliance. Acting as the primary Security Gateway, it manages all inter-VLAN routing, stateful firewall policies, and serves as the termination point for the Remote Access VPN.
 
 ## 🌐 Interface Configuration & Segmentation
-To enforce the principle of least privilege at the network level, the infrastructure is divided into three distinct segments:
+The infrastructure follows a **Strict Segmentation** model to isolate management traffic from client workloads. By leveraging the ESXi vSwitch fabric, the firewall enforces boundaries between three distinct security zones:
 
-| Interface | Network Segment | Purpose |
-| :--- | :--- | :--- |
-| **WAN** | DHCP (ISP/External) | External connectivity and NAT gateway. |
-| **LAN** | `10.10.10.1/24` | Core Infrastructure (Domain Controllers, RADIUS, Servers). |
-| **OPT** | `10.10.20.1/24` | Client Zone (Workstations, Guest VMs, Testing). |
-
-
+| Interface | Alias | Network Segment | Purpose |
+| :--- | :--- | :--- | :--- |
+| **WAN** | vmx0 | DHCP (ISP/External) | Public-facing NAT gateway and OpenVPN listener. |
+| **LAN** | vmx1 | 172.16.10.1/24 | **Core Infrastructure:** Domain Controllers, RADIUS, and Servers. |
+| **OPT** | vmx2 | 172.16.20.1/24 | **Client Zone:** Workstations, Guest VMs, and Sandbox testing. |
+| **VPN** | ovpns1 | 172.16.30.1/24 | **Remote Access:** Dynamic pool for authenticated VPN clients. |
 
 ---
 
 ## 🔒 Firewall Policy Framework
-The firewall is configured with a **"Deny by Default"** posture. Traffic is only permitted through explicit rules.
+The firewall is configured with a **"Deny by Default"** posture (Implicit Deny). All traffic flows are inspected, and only explicitly authorized connections are permitted.
 
-### Key Rules Implemented:
-1. **DNS/NTP Redirection:** Only the Domain Controller (`10.10.10.10`) is allowed to communicate with external DNS/NTP servers. All other internal traffic is intercepted.
-2. **Inter-VLAN Routing:** Traffic from the **OPT** (Client) zone to the **LAN** (Server) zone is restricted to essential services only (AD Ports, DNS, DHCP).
-3. **Anti-Lockout:** Secure management access to the pfSense WebGUI is restricted to specific IT Admin IPs within the LAN.
+### 🛡️ Critical Security Rules:
+1. **Active Directory & Identity:** High-priority rules allow the **172.16.10.10 (DC)** to communicate with external NTP/DNS providers, while internal clients are redirected to use the DC as their sole resolver.
+2. **RADIUS Protocol (AAA):** Explicitly permitted **UDP 1812/1813** traffic from the pfSense self-interface to the RADIUS Server (172.16.10.11).
+3. **Inter-VLAN Enforcement:** Traffic from the **OPT** zone to the **LAN** is restricted to essential ports only (TCP/UDP 53, 88, 135, 389, 445), preventing unauthorized lateral movement.
+4. **Anti-Lockout Policy:** WebGUI administration is restricted to a dedicated Management IP within the LAN segment to prevent brute-force attempts from untrusted zones.
 
 ---
 
-## 🛠️ Advanced Services
+## 🛠️ Advanced Network Services
 
-### 📡 RADIUS Integration
-* **Service:** Integrated with **Module 04 (NPS)**.
-* **Function:** pfSense acts as a RADIUS Client to authenticate administrative logins via Active Directory credentials.
+### 📡 RADIUS (NPS) Integration
+* **Component:** Integrated with **Module 04 (Windows NPS)**.
+* **Mechanism:** pfSense acts as a **Network Access Server (NAS)**, relaying VPN authentication requests to the RADIUS server for identity validation against Active Directory.
 
 ### 🗺️ Network Address Translation (NAT)
-* **Outbound NAT:** Configured to allow internal segments to access the Internet while masking internal IP schemes.
-* **Port Forwarding:** (Optional) Configured for specific services if external access is required for testing.
+* **Outbound NAT:** Configured in **Hybrid Mode** to allow internal segments access to the internet while maintaining a hidden internal IP topology.
+* **VPN Passthrough:** Configured to handle encrypted payloads without packet fragmentation by optimizing the MTU/MSS settings for the tunnel.
 
 ---
 
-## 📸 Configuration Highlights
-* **Rules Overview:** [Link to screenshots/firewall-rules.png]
-* **NAT Setup:** [Link to screenshots/nat-settings.png]
-* **Dashboard Status:** [Link to screenshots/pfsense-dashboard.png]
+## 📸 Verification & Proof of Concept
+* **Firewall Rules Matrix:** `screenshots/firewall-rules.png`
+* **Outbound NAT Mapping:** `screenshots/nat-settings.png`
+* **Services Dashboard:** `screenshots/pfsense-dashboard.png`
 
 ---
 
-## 🚀 Verification Commands
-From a client in the **OPT** zone, the following tests were performed to verify firewall integrity:
+## 🚀 Connectivity Validation
+Validated from a headless **Debian 12** endpoint in the **VPN** segment to ensure routing and firewall integrity:
+
 ```bash
-# Verify connectivity to Gateway
-ping 10.10.20.1
+# 1. Verify Gateway Reachability
+ping -c 3 172.16.10.1
 
-# Verify DNS resolution through Domain Controller
-nslookup google.com 10.10.10.10
+# 2. Verify Cross-Segment DNS Resolution (Active Directory)
+nslookup dc.corp.thomasbytes.ca 172.16.10.10
 
-# Test blocked Inter-VLAN access (Should Fail)
-ping 10.10.10.11
-
+# 3. Test Security Policy (Should be REJECTED by Firewall)
+# Attempting to access unauthorized internal resource
+curl -I [http://172.16.10.11:8080](http://172.16.10.11:8080)

@@ -1,80 +1,51 @@
-\# 🌐 DHCP Server Configuration
+# 🌐 Enterprise DHCP Server Configuration
 
+The **Dynamic Host Configuration Protocol (DHCP)** service is hosted on the primary Domain Controller (`DC-CORP-01`). It is engineered to provide automated, conflict-free IP addressing for the workstation and guest segments while ensuring full integration with Active Directory DNS for dynamic updates.
 
+## 🛠️ Scope Architecture: "OPT_Workstations"
 
-The DHCP (Dynamic Host Configuration Protocol) service is configured on the Domain Controller to automatically assign IP addresses to clients within the `PG-LAN` network.
+A dedicated scope was provisioned to service the isolated client segment (OPT1), ensuring that all endpoints receive the correct routing and identity resolution parameters:
 
+| Parameter | Value | Purpose |
+| :--- | :--- | :--- |
+| **Network ID** | `172.16.20.0/24` | Target segment for client workloads. |
+| **Address Pool** | `172.16.20.100 – 172.16.20.200` | Reserved range for dynamic allocation. |
+| **Subnet Mask** | `255.255.255.0` | Standard Class C masking. |
+| **Router (Gateway)** | `172.16.20.1` | pfSense Virtual Interface for the OPT zone. |
+| **DNS Server** | `172.16.10.10` | Authoritative DC for internal name resolution. |
+| **Domain Name** | `corp.thomasbytes.ca` | Full FQDN for DNS suffix search lists. |
+| **Lease Duration** | 8 Days | Optimized for stable workstation environments. |
 
+---
 
-\## 🛠️ Scope Details: "LAN\_Clients"
+## 🚀 Enterprise Deployment Workflow
 
-A new scope was created with the following parameters to ensure proper connectivity and domain integration:
+### 1. Active Directory Authorization
+In an enterprise forest, rogue DHCP servers can disrupt network operations. To prevent this, the DHCP role was explicitly **Authorized** within Active Directory.
+* **Mechanism:** The server’s IP and FQDN were added to the `DhcpServers` object in the AD Configuration partition, allowing the service to bind to the network interfaces.
 
+### 2. DNS Dynamic Update Registration
+The scope is configured to automatically register client **A (Host)** and **PTR (Pointer)** records in DNS. This ensures that even if a workstation's IP changes, it remains reachable via its hostname, which is critical for remote management and GPO application.
 
-
-| Parameter | Value |
-
-| :--- | :--- |
-
-| \*\*IP Range\*\* | `10.10.10.100` – `10.10.10.200` |
-
-| \*\*Subnet Mask\*\* | `255.255.255.0` |
-
-| \*\*Router (Gateway)\*\* | `10.10.10.1` (pfSense) |
-
-| \*\*DNS Server\*\* | `10.10.10.10` (Local DC) |
-
-| \*\*Domain Name\*\* | `corp.thomasbytes` |
-
-| \*\*Lease Duration\*\* | 8 Days (Default) |
+### 3. Network Relay & Firewalling
+Since the DHCP server resides in the **LAN (172.16.10.x)** but serves the **OPT1 (172.16.20.x)** segment, the following were verified:
+* **DHCP Relay:** Configured on pfSense to forward broadcast requests to the unicast address of the DC.
+* **Port Enforcement:** UDP Ports **67 (Server)** and **68 (Client)** are permitted in the pfSense firewall rules.
 
 
 
 ---
 
+## 💻 Administrative PowerShell Verification
 
-
-\## 🚀 Post-Installation Steps
-
-
-
-\### 1. Authorization in Active Directory
-
-In a domain environment, a DHCP server must be authorized in Active Directory to start serving IPs.
-
-\* \*\*Action:\*\* Right-click the server name in the DHCP console and select \*\*Authorize\*\*.
-
-
-
-\### 2. Firewall Rules (pfSense)
-
-To ensure DHCP traffic flows correctly, the following ports were verified as open on the LAN interface:
-
-\* \*\*UDP 67\*\* (Server)
-
-\* \*\*UDP 68\*\* (Client)
-
-
-
----
-
-
-
-\## 💻 PowerShell Verification
-
-To check the current DHCP scopes and active leases, the following commands are used:
-
-
+To audit the scope health and monitor active address utilization, the following PowerShell snippets are utilized:
 
 ```powershell
-
-\# Get all DHCP scopes
-
+# Retrieve all configured IPv4 scopes and their status
 Get-DhcpServerv4Scope
 
+# List active client leases to verify distribution and hostnames
+Get-DhcpServerv4Lease -ScopeId 172.16.20.0
 
-
-\# Get active IP leases
-
-Get-DhcpServerv4Lease -ScopeId 10.10.10.0
-
+# Verify the DHCP server's authorization status in AD
+Get-DhcpServerInDC

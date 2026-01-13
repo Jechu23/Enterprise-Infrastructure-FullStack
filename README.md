@@ -1,134 +1,67 @@
-\# 🏢 End-to-End Enterprise Network Infrastructure
+# 🛡️ Enterprise Hybrid Lab: Security, Identity & Network Infrastructure
 
-\### Scalable Identity, Security, and Edge Management Lab
+[![Infrastructure](https://img.shields.io/badge/Infrastructure-Hybrid--Cloud-blue.svg)](#)
+[![Security](https://img.shields.io/badge/Security-Zero--Trust-red.svg)](#)
+[![Identity](https://img.shields.io/badge/Identity-Active--Directory-yellow.svg)](#)
 
+## 📖 Project Overview
+This repository documents the architectural design and deployment of a full-stack enterprise laboratory. The project simulates a production-grade environment, integrating **VMware Virtualization**, **pfSense Networking**, **Windows Server Identity Services**, and **RADIUS/AAA Security**.
 
-
-\## 🌟 Executive Summary
-
-This project demonstrates the deployment of a professional-grade corporate network infrastructure virtualized on \*\*VMware ESXi 6.7.0\*\*. It integrates a \*\*pfSense\*\* perimeter firewall, a \*\*Windows Server 2016\*\* identity core (Active Directory), and centralized \*\*RADIUS\*\* authentication. The goal is to simulate a real-world enterprise environment providing secure access to Windows and Linux endpoints.
-
-
-
----
-
-
-
-\## 🛠️ Technology Stack
-
-\* \*\*Hypervisor:\*\* VMware ESXi 6.7.0
-
-\* \*\*Firewall/Routing:\*\* pfSense (WAN, LAN, OPT segments)
-
-\* \*\*Identity:\*\* Microsoft Active Directory Domain Services (AD DS)
-
-\* \*\*Core Services:\*\* DNS, DHCP, Group Policy (GPO)
-
-\* \*\*Security:\*\* Network Policy Server (NPS) / RADIUS
-
-\* \*\*Endpoints:\*\* Windows 10 Pro \& Ubuntu Desktop/Server
-
-
+The core objective was to build a secure, scalable, and audited infrastructure using a **Zero-Trust** approach, ensuring that all network segments are isolated and all access is centrally managed via Active Directory.
 
 ---
 
+## 🏗️ Architecture & Topology
+The environment is hosted on a high-performance **HP Z800 Workstation** running **ESXi**, with a multi-VLAN segmentation strategy:
 
-
-\## 📐 Network Topology \& Architecture
-
-The infrastructure is segmented into three main zones:
-
-1\.  \*\*WAN:\*\* External connectivity.
-
-2\.  \*\*LAN (10.10.10.0/24):\*\* Trusted zone for Domain Controllers and Servers.
-
-3\.  \*\*OPT (10.10.20.0/24):\*\* Isolated zone for guest/testing endpoints.
-
-
-
-
-
-
+* **Management LAN (172.16.10.0/24):** Core services (DC, DNS, DHCP, NPS).
+* **Workstations OPT1 (172.16.20.0/24):** Isolated user segment.
+* **VPN Pool (172.16.30.0/24):** Dynamic pool for remote workers.
+* **WAN Interface:** Uplink to the physical network via pfSense.
 
 ---
 
-
-
-\## 📂 Project Modules
-
-
-
-\### \[01. Virtualization Layer (ESXi)](./01-Virtualization-ESXi/)
-
-\* Virtual Switch (vSwitch) configuration.
-
-\* Port Group isolation for WAN/LAN/OPT.
-
-\* Resource allocation for high availability.
-
-
-
-\### \[02. Network \& Perimeter (pfSense)](./02-Network-pfSense/)
-
-\* Interface configuration (WAN/LAN/OPT).
-
-\* Firewall Rules (Aliases, NAT, and Blocking Inter-VLAN traffic).
-
-\* VPN \& Gateway monitoring.
-
-
-
-\### \[03. Identity Services (Active Directory)](./03-Active-Directory-Core/)
-
-\* Forest/Domain promotion (`corp.thomasbytes`).
-
-\* DNS Forwarders and Reverse Lookup Zones.
-
-\* DHCP Scopes \& Authorization.
-
-\* \*\*GPO Implementation:\*\* Password policies, RDP restrictions, and desktop management.
-
-
-
-\### \[04. Centralized Authentication (RADIUS)](./04-Security-Radius/)
-
-\* NPS installation and AD Registration.
-
-\* RADIUS Client setup for pfSense integration.
-
-\* Connection Request \& Network Access Policies.
-
-
-
-\### \[05. Client Integration](./05-Endpoints-Integration/)
-
-\* Joining Windows 10 to the domain.
-
-\* Linux (Ubuntu) integration using SSSD/Realm.
-
-\* Verification of GPO application and user permissions.
-
-
+## 🛠️ Technology Stack
+| Layer | Technologies |
+| :--- | :--- |
+| **Virtualization** | VMware ESXi 6.7/7.0, VMXNET3, Thin Provisioning |
+| **Network & Firewall** | pfSense (Router/Firewall), OpenVPN, NAT, Aliases |
+| **Identity & Policy** | Active Directory DS, Group Policy (GPO), DNS, DHCP |
+| **AAA Security** | Windows Network Policy Server (NPS), RADIUS Protocol |
+| **Endpoints** | Windows 10 Pro (Domain-Joined), Debian Linux |
 
 ---
 
+## 🚀 Key Implementation Highlights
 
+### 1. Centralized Identity & AAA
+Integrated **pfSense with Windows NPS** via **RADIUS**. This allows remote users to authenticate using their Active Directory credentials, ensuring that access is governed by the `VPN_Users` security group policies.
 
-\## 🚀 Key Achievements
+### 2. Network Hardening (Zero-Trust)
+Implemented granular firewall rules using **pfSense Aliases**. Workstations in the OPT1 segment can only communicate with the Domain Controller through specific ports (DNS, Kerberos, LDAP, SMB), effectively preventing lateral movement.
 
-\* Implemented \*\*Least Privilege\*\* access via GPOs.
-
-\* Configured \*\*DNS Sinkholing\*\* and Forwarding for secure browsing.
-
-\* Centralized all network authentication via \*\*RADIUS\*\*, reducing local credential overhead.
-
-\* Documented the complete \*\*ESXi networking\*\* stack for modular scalability.
-
-
+### 3. Active Directory Optimization
+Resolved complex DNS resolution issues by configuring **Reverse Lookup Zones** and forwarders, ensuring seamless service discovery across the forest. Enforced security baselines via GPOs (RDP Access Control, Password Complexity).
 
 ---
 
-\*\*Author:\*\* Jechu23  
+## 📂 Project Structure
+The documentation is organized into five specialized modules:
 
-\*\*Status:\*\* In Progress / Completed 🛠️
+* [**01-Hardware-Virtualization**](./01-Hardware-Virtualization/): ESXi setup and VM hardware optimization.
+* [**02-Network-pfSense**](./02-Network-pfSense/): VLAN segmentation, NAT, and Gateway configuration.
+* [**03-Active-Directory-Core**](./03-Active-Directory-Core/): Domain controller promotion, DNS/DHCP, and GPO.
+* [**04-Security-RADIUS**](./04-Security-RADIUS/): NPS configuration, AAA flow, and Troubleshooting.
+* [**05-Endpoints-Integration**](./05-Endpoints-Integration/): Client onboarding and connectivity validation.
 
+---
+
+## 🔍 Professional Skills Demonstrated
+* **Network Security:** VPN tunneling, Firewalling, and RADIUS integration.
+* **Infrastructure as Code (Documentation):** Clear, technical, and procedimental documentation.
+* **Troubleshooting:** Diagnostic capability for L2/L3 issues and protocol handshakes.
+* **System Hardening:** Implementing the Principle of Least Privilege (PoLP).
+
+---
+**Author:** ThomasBytes  
+**Portfolio Project:** Enterprise Infrastructure Lab 2026
