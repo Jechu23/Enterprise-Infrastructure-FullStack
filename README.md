@@ -38,7 +38,7 @@ The environment is hosted on a high-performance **HP Z800 Workstation** running 
 > **Technical blueprint of the hybrid infrastructure. This diagram illustrates the pfSense core routing, VLAN segmentation (Management vs. OPT1), and the RADIUS-backed VPN authentication flow.**
 
 <p align="center">
-  <img src="./Diagrams/topologia.png" width="90%" alt="Network Topology">
+  <img src="./Diagrams/topology.png" width="90%" alt="Network Topology">
 </p>
 
 ---
