@@ -63,5 +63,45 @@ The documentation is organized into five specialized modules:
 * **System Hardening:** Implementing the Principle of Least Privilege (PoLP).
 
 ---
-**Author:** ThomasBytes  
+
+## 🏗️ Network Topology – Secure Lab Architecture
+
+This lab simulates a corporate remote-access environment using VLAN segmentation,
+OpenVPN, and Active Directory authentication via RADIUS.
+
+```mermaid
+flowchart TB
+
+    VPNUser["Remote Laptop\n(OpenVPN Client)\nOutside Network"]
+    Internet["🌐 Internet"]
+    ISP["ISP Router"]
+
+    Host["Physical Host\nHP Z800\nVMware ESXi"]
+    pfSense["pfSense\nFirewall / VPN Gateway"]
+
+    DC["DC-CORP-01\nAD + DNS + NPS\n172.16.10.0/24"]
+    PC["Win10-CLI\nOPT1\n172.16.20.0/24"]
+
+    VPNUser -->|"OpenVPN Tunnel"| Internet
+    Internet --> ISP
+    ISP -->|"WAN"| pfSense
+
+    Host --> pfSense
+
+    pfSense -->|"Management LAN"| DC
+    pfSense -->|"OPT1"| PC
+
+    pfSense -->|"RADIUS (UDP 1812)"| DC
+    PC -->|"Identity Traffic Only"| DC
+
+
+
+### 💡 Key Challenges Overcome
+
+DNS Recursion Issue: Resolved a critical failure where internal clients couldn't resolve external domains by configuring proper DNS Forwarders and Reverse Lookup Zones.
+
+RADIUS Protocol Mismatch: Diagnosed and fixed an authentication failure between pfSense and NPS by aligning encryption protocols (MS-CHAPv2).
+
+---
+**Author:** Oswaldo Jesus (Jechu23)  
 **Portfolio Project:** Enterprise Infrastructure Lab 2026
