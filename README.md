@@ -48,7 +48,7 @@ Resolved complex DNS resolution issues by configuring **Reverse Lookup Zones** a
 ## 📂 Project Structure
 The documentation is organized into five specialized modules:
 
-* [**01-Hardware-Virtualization**](./01-Hardware-Virtualization/): ESXi setup and VM hardware optimization.
+* [**01-Virtualization-ESXi**](./01-Virtualization-ESXi/): ESXi setup and VM hardware optimization.
 * [**02-Network-pfSense**](./02-Network-pfSense/): VLAN segmentation, NAT, and Gateway configuration.
 * [**03-Active-Directory-Core**](./03-Active-Directory-Core/): Domain controller promotion, DNS/DHCP, and GPO.
 * [**04-Security-RADIUS**](./04-Security-RADIUS/): NPS configuration, AAA flow, and Troubleshooting.
