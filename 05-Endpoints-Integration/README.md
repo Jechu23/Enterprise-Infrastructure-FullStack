@@ -37,7 +37,7 @@ To provide a detailed view of the integration, this folder contains the followin
 | :--- | :--- |
 | [**windows-domain-join.md**](./windows-domain-join.md) | Step-by-step of joining Win10 to AD and GPO verification. |
 | [**linux-client-setup.md**](./linux-client-setup.md) | Configuration of the Linux node and network utility testing. |
-| [**connectivity-tests.md**](./connectivity-tests.md) | ICMP, DNS, and HTTP benchmarks across subnets. |
+| [**connectivity-test.md**](./connectivity-test.md) | ICMP, DNS, and HTTP benchmarks across subnets. |
 | [**vpn-client-export.md**](./vpn-client-export.md) | Process of exporting and installing the OpenVPN profile with Root CA. |
 
 ---

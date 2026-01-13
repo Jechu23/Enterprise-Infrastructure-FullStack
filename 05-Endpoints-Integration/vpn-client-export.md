@@ -1,10 +1,5 @@
 \### 3. 📄 `vpn-client-export.md`
 
-Este es un punto clave de seguridad: cómo un usuario remoto entra a la red.
-
-
-
-```markdown
 
 \# 🔐 VPN Client Export \& RADIUS Authentication
 
