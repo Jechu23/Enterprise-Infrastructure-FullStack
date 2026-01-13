@@ -45,6 +45,12 @@ Resolved complex DNS resolution issues by configuring **Reverse Lookup Zones** a
 
 ---
 
+![Network Topology](./Diagrams/topologia.png)
+![Network Topology](./Diagrams/visual outline of the project.jpg)
+
+
+---
+
 ## 📂 Project Structure
 The documentation is organized into five specialized modules:
 
@@ -63,38 +69,6 @@ The documentation is organized into five specialized modules:
 * **System Hardening:** Implementing the Principle of Least Privilege (PoLP).
 
 ---
-
-## 🏗️ Network Topology – Secure Lab Architecture
-
-This lab simulates a corporate remote-access environment using VLAN segmentation,
-OpenVPN, and Active Directory authentication via RADIUS.
-
-```mermaid
-flowchart TB
-
-    VPNUser["Remote Laptop\n(OpenVPN Client)\nOutside Network"]
-    Internet["🌐 Internet"]
-    ISP["ISP Router"]
-
-    Host["Physical Host\nHP Z800\nVMware ESXi"]
-    pfSense["pfSense\nFirewall / VPN Gateway"]
-
-    DC["DC-CORP-01\nAD + DNS + NPS\n172.16.10.0/24"]
-    PC["Win10-CLI\nOPT1\n172.16.20.0/24"]
-
-    VPNUser -->|"OpenVPN Tunnel"| Internet
-    Internet --> ISP
-    ISP -->|"WAN"| pfSense
-
-    Host --> pfSense
-
-    pfSense -->|"Management LAN"| DC
-    pfSense -->|"OPT1"| PC
-
-    pfSense -->|"RADIUS (UDP 1812)"| DC
-    PC -->|"Identity Traffic Only"| DC
-
-
 
 ### 💡 Key Challenges Overcome
 
